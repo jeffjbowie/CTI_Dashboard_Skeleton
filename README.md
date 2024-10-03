@@ -1,7 +1,7 @@
 ## IWS 17 | October 2, 2024 | Edmond, Oklahoma
 # Develop A Custom Threat Intel Dashboard with Python 
 
-A very simple dashboard for representing CTI data with visualizations (Chart.js) and quickly by leveraging MaterilizeCSS framework + Flask.
+A very simple (WIP) dashboard for representing CTI data with visualizations (Chart.js) and quickly by leveraging MaterilizeCSS framework + Flask.
 
 ### Dependencies:
 * Python 3
