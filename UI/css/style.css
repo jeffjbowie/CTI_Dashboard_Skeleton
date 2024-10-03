@@ -1,0 +1,25 @@
+.map-container {
+	height: 600px;
+	width: 100%;
+}
+canvas {
+	display: block;
+	width: 100% !important;
+}
+table {
+	width: 100%;
+}
+
+#logo {
+    max-width: 280px;
+}
+
+.dataTables_filter {
+	display: none;
+}
+h3 {
+	margin-top: 0;
+    text-transform: uppercase;
+    font-weight:1000;
+}
+

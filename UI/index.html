@@ -1,0 +1,168 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+	<meta charset="UTF-8">
+	<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+	<title>VERITACO | Threat Intelligence v0.1</title>
+
+	<!-- jQuery -->
+	<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+
+	<!-- Materialize CSS -->
+	<link href="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/css/materialize.min.css" rel="stylesheet">
+
+	<!-- Chart.js -->
+	<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+
+	<!-- Mapbox -->
+	<link href='https://api.tiles.mapbox.com/mapbox-gl-js/v2.9.0/mapbox-gl.css' rel='stylesheet'>
+	<script src='https://api.tiles.mapbox.com/mapbox-gl-js/v2.9.0/mapbox-gl.js'></script>
+
+	<!-- DataTables CSS -->
+	<link href="https://cdn.datatables.net/1.10.25/css/jquery.dataTables.min.css" rel="stylesheet">
+
+	<!-- DataTables JS -->
+	<script src="https://cdn.datatables.net/1.10.25/js/jquery.dataTables.min.js"></script>
+
+	<!-- Custom Style -->
+	<link href="css/style.css" rel="stylesheet">
+
+</head>
+
+<body>
+
+	<!-- Main Container -->
+	<div class="container">
+
+		<div class="row center">
+			<img class="responsive-img" id="logo" src="img/Logo.png" />
+			<h3 class="cormorant-garamond">Threat Intelligence v0.1</h3>
+		</div>
+
+		<div class="row">
+			<div class="col s12">
+				<canvas id="lineChart"></canvas>
+			</div>
+		</div>
+
+		<div class="row">
+			<div class="col s6">
+				<canvas id="doughnutChart"></canvas>
+			</div>
+			<div class="col s6 map-container" id="map"></div>
+		</div>
+
+		<!-- Fourth Row: DataTable -->
+		<div class="row">
+			<div class="col s12">
+				<table id="dataTable">
+					<thead>
+						<tr>
+							<th>ID</th>
+							<th>Description</th>
+							<th>Severity</th>
+							<th>Published Time</th>
+						</tr>
+					</thead>
+					<tbody></tbody>
+				</table>
+			</div>
+		</div>
+	</div>
+
+	<!-- Materialize JavaScript -->
+	<script src="https://cdnjs.cloudflare.com/ajax/libs/materialize/1.0.0/js/materialize.min.js"></script>
+
+	<script>
+
+		const ctxLine = document.getElementById('lineChart').getContext('2d');
+		const ctxDoughnut = document.getElementById('doughnutChart').getContext('2d');
+
+		// Line Chart Data
+		const lineChartData = {
+			labels: ['June', 'July', 'August', 'September', 'October', 'November', 'December'],
+			datasets: [{
+				label: 'Malicious Traffic',
+				data: [304, 105, 48, 30, 20, 12, 4],
+				backgroundColor: '#ff007f',
+				borderColor: '#00ff00',
+				borderWidth: 1,
+				pointStyle: 'rect'
+			}]
+		};
+
+		// Doughnut Chart Data
+		const doughnutChartData = {
+
+			labels: ['Failed Logins', 'Account Lockouts', 'Password Resets', 'Inactive Accounts'],
+			datasets: [{
+				label: ['Events'],
+				data: [15, 25, 35, 25],
+				backgroundColor: ['#ff007f', '#00e5ff', '#00ff00', '#8e2de2'],
+				borderWidth: 0
+			}]
+		};
+
+		new Chart(ctxDoughnut, { type: 'doughnut', data: doughnutChartData });
+		new Chart(ctxLine, { type: 'line', data: lineChartData });
+
+		// Mapbox Map
+		mapboxgl.accessToken = '<MAPBOX_API_TOKEN>';
+		const map = new mapboxgl.Map({
+			container: 'map',
+			style: 'mapbox://styles/mapbox/light-v10',
+			center: [-97.0, 35.5], // OKC
+			zoom: 6
+		});
+
+		// Method for calling National Vulnerabiliity Database API
+		async function queryNVD(query) {
+			const url = `http://localhost:3000/vulnerabilities`;
+			try {
+				const response = await fetch(url);
+				if (!response.ok) {
+					throw new Error(`Error: ${response.status} - ${response.statusText}`);
+				}
+				const data = await response.json();
+				return data;
+
+			} catch (error) {
+				console.error('NVD API error:', error);
+				return null;
+			}
+		}
+
+		$(document).ready(function () {
+
+			// Query National Vulnerability Database
+			queryNVD()
+				.then(data => {
+					if (data) {
+
+						$('#dataTable').DataTable({
+							data: data,
+							columns: [
+								{ data: 'cve.id' },
+								{ data: 'cve.descriptions[0].value' },
+								{ data: 'cve.metrics.cvssMetricV2[0].baseSeverity' },
+								{ data: 'cve.published' },
+							]
+						});
+
+						console.log('NVD results:', data);
+					}
+				});
+
+			// Add random markers around OKC.
+			for (let i = 0; i < 10; i++) {
+				new mapboxgl.Marker()
+					.setLngLat([Math.random() * (-97 - -98) + -98, Math.random() * (36 - 35) + 35])
+					.addTo(map);
+			}
+
+		});
+	</script>
+</body>
+</html>
